@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Values — Your AI, Your Values</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0c0b; --panel:#141210; --panel-2:#1b1815; --line:#2a2520;
+  --fg:#f2ede4; --fg-dim:#a89f90; --fg-faint:#6d655a;
+  --amber:#e0a355; --amber-deep:#b87a2c;
+  --teal:#5b8a8f; --rose:#c96a5c; --green:#6f9c6a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--fg);font-family:'Inter',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.serif{font-family:'Newsreader',serif}
+.mono{font-family:'JetBrains Mono',monospace}
+::selection{background:var(--amber);color:var(--ink)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+
+/* layout */
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--line);background:rgba(13,12,11,.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:60}
+.hrow{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:22px;height:22px;flex-shrink:0}
+.bname{font-family:'Newsreader',serif;font-size:1.35rem;font-weight:500}
+.bsub{font-size:.7rem;color:var(--fg-faint);letter-spacing:.14em;text-transform:uppercase}
+.hstat{display:flex;align-items:center;gap:14px;font-size:.72rem;color:var(--fg-dim)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--fg-faint);display:inline-block;margin-right:6px}
+.dot.on{background:var(--green);box-shadow:0 0 7px var(--green)}
+.dot.off{background:var(--rose)}
+
+/* steps */
+.steps{display:flex;gap:2px;border-bottom:1px solid var(--line);background:var(--panel)}
+.step{flex:1;padding:14px 16px;font-size:.78rem;color:var(--fg-faint);border-bottom:2px solid transparent;transition:.2s;text-align:left;letter-spacing:.02em}
+.step:hover{color:var(--fg-dim);background:var(--panel-2)}
+.step.active{color:var(--amber);border-bottom-color:var(--amber);background:var(--panel-2)}
+.step .n{font-family:'JetBrains Mono',monospace;opacity:.55;margin-right:8px}
+.step.done .n::after{content:' ✓';color:var(--green)}
+
+main{padding:44px 0 90px}
+.pane{display:none}
+.pane.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:12px}
+h1{font-family:'Newsreader',serif;font-weight:400;font-size:clamp(1.9rem,3.6vw,2.7rem);line-height:1.12;max-width:20ch}
+h1 em{font-style:italic;color:var(--amber)}
+h2{font-family:'Newsreader',serif;font-weight:500;font-size:1.35rem;margin-bottom:6px}
+.lead{color:var(--fg-dim);max-width:62ch;margin-top:14px;font-size:1rem}
+.hint{color:var(--fg-faint);font-size:.83rem;max-width:64ch;margin-top:8px}
+
+/* dilemma card */
+.dcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:26px;margin-bottom:16px;transition:border-color .2s}
+.dcard.answered{border-color:rgba(224,163,85,.35)}
+.dcard.skipped{opacity:.5}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.dq{font-family:'Newsreader',serif;font-size:1.13rem;line-height:1.45;flex:1;min-width:260px}
+.axis{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-faint);border:1px solid var(--line);padding:3px 9px;border-radius:99px;white-space:nowrap}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:640px){.opts{grid-template-columns:1fr}}
+.opt{border:1px solid var(--line);border-radius:10px;padding:15px;text-align:left;transition:.16s;background:var(--panel-2);font-size:.87rem;line-height:1.45}
+.opt:hover{border-color:var(--fg-faint);transform:translateY(-1px)}
+.opt.sel{border-color:var(--amber);background:rgba(224,163,85,.09);color:var(--fg)}
+.opt .k{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--amber);display:block;margin-bottom:6px;letter-spacing:.1em}
+.derived{border-left:2px solid var(--amber-deep);padding:10px 14px;margin-bottom:12px;font-family:'Newsreader',serif;font-style:italic;font-size:.95rem;color:var(--fg-dim);background:rgba(224,163,85,.04)}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flab{font-size:.72rem;color:var(--fg-faint);margin-right:4px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:5px 13px;font-size:.74rem;color:var(--fg-dim);transition:.15s}
+.chip:hover{border-color:var(--fg-faint)}
+.chip.sel{background:var(--amber);color:var(--ink);border-color:var(--amber);font-weight:500}
+.chip.skip.sel{background:var(--fg-faint);border-color:var(--fg-faint);color:var(--ink)}
+.reword{width:100%;margin-top:10px;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:.85rem;outline:none;transition:border-color .2s}
+.reword:focus{border-color:var(--amber-deep)}
+.reword::placeholder{color:var(--fg-faint)}
+
+/* buttons */
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:26px}
+.btn{background:var(--amber);color:var(--ink);font-weight:600;font-size:.85rem;padding:11px 22px;border-radius:99px;transition:.2s}
+.btn:hover{transform:scale(1.02);box-shadow:0 6px 22px rgba(224,163,85,.24)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--fg);font-weight:500}
+.btn.ghost:hover{border-color:var(--fg-faint);background:var(--panel);box-shadow:none}
+.count{font-size:.78rem;color:var(--fg-faint);margin-left:auto}
+
+/* value list */
+.vgroup{margin-bottom:26px}
+.gtitle{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-faint);padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:12px;display:flex;justify-content:space-between}
+.gtitle .gn{color:var(--amber)}
+.vrow{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(42,37,32,.5)}
+.vrow:last-child{border-bottom:none}
+.vord{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--fg-faint);width:22px;flex-shrink:0;padding-top:2px}
+.vtext{flex:1;font-size:.92rem;line-height:1.5}
+.vmeta{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:var(--fg-faint);margin-top:4px}
+.vw{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--amber);flex-shrink:0}
+
+/* code out */
+pre{background:#080706;border:1px solid var(--line);border-radius:10px;padding:18px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;color:var(--fg-dim);white-space:pre-wrap;word-break:break-word;max-height:520px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-size:.75rem;color:var(--fg-dim);font-family:'JetBrains Mono',monospace;transition:.15s}
+.tab:hover{border-color:var(--fg-faint)}
+.tab.on{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+
+/* metrics */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:24px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:18px 0}
+.mcell{background:var(--panel);padding:17px}
+.mval{font-family:'Newsreader',serif;font-size:1.85rem;color:var(--amber);line-height:1}
+.mval.big{font-size:2.4rem}
+.mlab{font-size:.68rem;color:var(--fg-faint);margin-top:6px;letter-spacing:.03em}
+.axbar{display:flex;align-items:center;gap:11px;margin-bottom:9px;font-size:.79rem}
+.axname{width:88px;color:var(--fg-dim);flex-shrink:0}
+.axtrack{flex:1;height:5px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.axfill{height:100%;background:linear-gradient(90deg,var(--amber-deep),var(--amber));border-radius:3px;transition:width .5s ease}
+.axd{width:52px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:.72rem;flex-shrink:0}
+.up{color:var(--green)}.down{color:var(--rose)}.flat{color:var(--fg-faint)}
+.verdict{border-left:3px solid var(--amber);padding:16px 18px;background:rgba(224,163,85,.05);border-radius:0 10px 10px 0;font-size:.9rem;line-height:1.6;color:var(--fg-dim);margin-top:18px}
+.verdict.warn{border-left-color:var(--rose);background:rgba(201,106,92,.06)}
+.verdict.good{border-left-color:var(--green);background:rgba(111,156,106,.06)}
+
+/* probe rows */
+.prow{border:1px solid var(--line);border-radius:10px;padding:15px;margin-bottom:9px;background:var(--panel)}
+.phead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:9px;flex-wrap:wrap}
+.pid{font-family:'JetBrains Mono',monospace;font-size:.74rem;color:var(--fg)}
+.badge{font-family:'JetBrains Mono',monospace;font-size:.62rem;padding:2px 8px;border-radius:99px;letter-spacing:.06em}
+.badge.a{background:rgba(111,156,106,.16);color:var(--green)}
+.badge.n{background:rgba(201,106,92,.14);color:var(--rose)}
+.badge.u{background:rgba(109,101,90,.18);color:var(--fg-faint)}
+.presp{font-size:.8rem;color:var(--fg-dim);padding:8px 11px;border-left:2px solid var(--line);margin-top:6px;line-height:1.5}
+.presp .pl{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--fg-faint);display:block;margin-bottom:3px;letter-spacing:.08em}
+
+/* controls */
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:.74rem;color:var(--fg-faint);margin-bottom:5px;letter-spacing:.03em}
+.fld input,.fld select{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:.85rem;outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--amber-deep)}
+.inline{display:flex;gap:12px}.inline>*{flex:1}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(224,163,85,.25);border-top-color:var(--amber);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.notice{font-size:.78rem;color:var(--fg-faint);border:1px dashed var(--line);border-radius:9px;padding:12px 14px;margin-top:14px;line-height:1.55}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--panel-2);border:1px solid var(--line);border-radius:99px;padding:11px 22px;font-size:.83rem;transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:200;box-shadow:0 10px 34px rgba(0,0,0,.5)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+footer{border-top:1px solid var(--line);padding:24px 0;font-size:.74rem;color:var(--fg-faint)}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="wrap hrow">
+  <div class="brand">
+   <svg class="mark" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="#e0a355" stroke-width="1.4"/>
+    <path d="M12 4v16M4 12h16" stroke="#e0a355" stroke-width="1" opacity=".4"/>
+    <circle cx="12" cy="12" r="3.4" fill="#e0a355"/>
+   </svg>
+   <div>
+    <div class="bname">Values</div>
+    <div class="bsub">Your AI, Your Values</div>
+   </div>
+  </div>
+  <div class="hstat">
+   <span><span class="dot" id="rtDot"></span><span id="rtLabel">checking runtime…</span></span>
+   <span class="mono" id="digestLabel">unsigned</span>
+  </div>
+ </div>
+ <div class="wrap" style="padding:0">
+  <div class="steps">
+   <button class="step active" data-pane="p1"><span class="n">01</span>Elicit</button>
+   <button class="step" data-pane="p2"><span class="n">02</span>Review</button>
+   <button class="step" data-pane="p3"><span class="n">03</span>Compile</button>
+   <button class="step" data-pane="p4"><span class="n">04</span>Prove</button>
+  </div>
+ </div>
+</header>
+
+<main class="wrap">
+
+ <!-- 01 ELICIT -->
+ <section class="pane on" id="p1">
+  <div class="eyebrow">01 — Elicitation</div>
+  <h1>Nobody can state their values <em>in the abstract.</em></h1>
+  <p class="lead">Ask someone whether they value honesty and they say yes. Ask whether an assistant should call their poem mediocre while they're proud of it, and you learn something real.</p>
+  <p class="hint">Each situation below has two defensible answers. There is no correct one. Pick what you actually want, set how firmly you hold it, and reword anything phrased wrong.</p>
+
+  <div class="bar">
+   <div class="fld" style="margin:0;min-width:190px">
+    <label>This file speaks for</label>
+    <input id="label" value="me" placeholder="me">
+   </div>
+   <div class="fld" style="margin:0;min-width:130px">
+    <label>Locale (optional)</label>
+    <input id="locale" placeholder="ru-RU">
+   </div>
+   <span class="count" id="c1">0 answered</span>
+  </div>
+
+  <div id="dilemmas" style="margin-top:22px"></div>
+
+  <div class="bar">
+   <button class="btn" id="toReview">Review derived values →</button>
+   <span class="count" id="c1b">0 answered</span>
+  </div>
+ </section>
+
+ <!-- 02 REVIEW -->
+ <section class="pane" id="p2">
+  <div class="eyebrow">02 — Review</div>
+  <h1>Read every line. If one is wrong, <em>it is wrong about you.</em></h1>
+  <p class="lead">Order matters: when two values collide, the one listed earlier wins. Absolutes are never crossed, defaults yield only to an explicit override, leanings yield freely.</p>
+
+  <div class="grid2" style="margin-top:26px">
+   <div class="card">
+    <h2>Your values</h2>
+    <div class="hint" style="margin-bottom:16px">Grouped by firmness, in conflict order.</div>
+    <div id="vlist"></div>
+   </div>
+   <div class="card">
+    <h2>Conduct</h2>
+    <div class="hint" style="margin-bottom:16px">Inferred from your answers. Change anything.</div>
+    <div id="conduct"></div>
+    <div class="notice">These are inferences from what you chose, not assertions about you. Every one is editable, and the file records what you set — not what was guessed.</div>
+   </div>
+  </div>
+
+  <div class="bar">
+   <button class="btn ghost" data-goto="p1">← Back</button>
+   <button class="btn" id="toCompile">Compile →</button>
+   <button class="btn ghost" id="save">Save to disk</button>
+  </div>
+ </section>
+
+ <!-- 03 COMPILE -->
+ <section class="pane" id="p3">
+  <div class="eyebrow">03 — Compile</div>
+  <h1>One file, <em>every runtime.</em></h1>
+  <p class="lead">A values file isn't executable. It compiles down to whatever your model accepts. Compilation is deterministic: the same file always produces byte-identical output, which is what makes the next step attributable.</p>
+
+  <div class="tabs" id="tabs" style="margin-top:24px">
+   <button class="tab on" data-t="system_prompt">system_prompt</button>
+   <button class="tab" data-t="skill">skill</button>
+   <button class="tab" data-t="modelfile">modelfile</button>
+   <button class="tab" data-t="json">json</button>
+   <button class="tab" data-t="markdown">markdown</button>
+  </div>
+  <pre id="artifact">—</pre>
+
+  <div class="bar">
+   <button class="btn ghost" data-goto="p2">← Back</button>
+   <button class="btn ghost" id="copy">Copy</button>
+   <button class="btn" id="toProve">Prove it works →</button>
+  </div>
+ </section>
+
+ <!-- 04 PROVE -->
+ <section class="pane" id="p4">
+  <div class="eyebrow">04 — Proof</div>
+  <h1>A file that claims to steer a model <em>must be measurable.</em></h1>
+  <p class="lead">Every dilemma runs twice against the same model: once bare, once with your compiled file attached. If the file does nothing, the number says so — that is the point of measuring instead of asserting.</p>
+
+  <div class="grid2" style="margin-top:26px">
+   <div class="card">
+    <h2>Runtime</h2>
+    <div class="hint" style="margin-bottom:16px">Local by default. A values file is the last thing that should be sent to someone else's server.</div>
+    <div class="fld">
+     <label>Backend</label>
+     <select id="rt">
+      <option value="mock">mock — offline stub, not real evidence</option>
+      <option value="ollama">ollama — local daemon</option>
+      <option value="openai-compat">openai-compatible — llama.cpp / vLLM / LM Studio</option>
+     </select>
+    </div>
+    <div class="inline">
+     <div class="fld"><label>Model</label><input id="model" placeholder="llama3.2"></div>
+     <div class="fld"><label>Temperature</label><input id="temp" value="0.0"></div>
+    </div>
+    <div class="fld"><label>Host (optional)</label><input id="host" placeholder="http://127.0.0.1:11434"></div>
+    <button class="btn" id="run" style="width:100%">Run probe suite</button>
+    <div class="notice" id="rtNote">The mock runtime exercises the whole pipeline with nothing installed. It proves the code path, not the model — reports from it are stamped as mock.</div>
+   </div>
+
+   <div class="card">
+    <h2>Measurement</h2>
+    <div class="hint">Delta is the headline: alignment with the file, minus alignment without it.</div>
+    <div class="mgrid" id="metrics">
+     <div class="mcell"><div class="mval big">—</div><div class="mlab">delta</div></div>
+     <div class="mcell"><div class="mval">—</div><div class="mlab">without file</div></div>
+     <div class="mcell"><div class="mval">—</div><div class="mlab">with file</div></div>
+     <div class="mcell"><div class="mval">—</div><div class="mlab">flip rate</div></div>
+    </div>
+    <div id="axes"></div>
+    <div id="verdict"></div>
+   </div>
+  </div>
+
+  <div id="probes" style="margin-top:26px"></div>
+
+  <div class="bar">
+   <button class="btn ghost" data-goto="p3">← Back</button>
+   <button class="btn ghost" id="dl" disabled>Download report</button>
+  </div>
+ </section>
+
+</main>
+
+<footer class="wrap">
+ Values · spec v1.0 · nothing leaves this machine
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+const S = {
+  dilemmas: [],
+  answers: {},          // id -> {choice, strength, custom, skipped}
+  file: null,
+  target: 'system_prompt',
+  report: null,
+};
+
+const $  = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+));
+
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+async function api(path, body){
+  const opts = body
+    ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}
+    : {};
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({error:'malformed response'}));
+  if(!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+  return data;
+}
+
+/* ---------- navigation ---------- */
+function goto(id){
+  $$('.pane').forEach(p => p.classList.toggle('on', p.id === id));
+  $$('.step').forEach(s => s.classList.toggle('active', s.dataset.pane === id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$$('.step').forEach(s => s.onclick = () => goto(s.dataset.pane));
+$$('[data-goto]').forEach(b => b.onclick = () => goto(b.dataset.goto));
+
+/* ---------- 01 elicit ---------- */
+async function loadDilemmas(){
+  const data = await api('/api/dilemmas');
+  S.dilemmas = data.dilemmas;
+  $('#dilemmas').innerHTML = S.dilemmas.map((d, i) => `
+    <div class="dcard" id="dc-${esc(d.id)}">
+      <div class="dhead">
+        <div class="dq">${esc(d.question)}</div>
+        <span class="axis">${esc(d.axis)}</span>
+      </div>
+      <div class="opts">
+        <button class="opt" data-d="${esc(d.id)}" data-c="${esc(d.a.label)}">
+          <span class="k">A</span>${esc(d.a.description)}
+        </button>
+        <button class="opt" data-d="${esc(d.id)}" data-c="${esc(d.b.label)}">
+          <span class="k">B</span>${esc(d.b.description)}
+        </button>
+      </div>
+      <div id="dv-${esc(d.id)}"></div>
+    </div>`).join('');
+
+  $$('.opt').forEach(b => b.onclick = () => choose(b.dataset.d, b.dataset.c));
+  updateCounts();
+}
+
+function choose(did, label){
+  const d = S.dilemmas.find(x => x.id === did);
+  const prev = S.answers[did] || {};
+  const implied = (label === d.a.label) ? d.value_if_a : d.value_if_b;
+
+  S.answers[did] = {
+    choice: label,
+    strength: prev.strength || d.suggested_firmness || 'strong',
+    custom: prev.custom || '',
+    skipped: false,
+  };
+
+  const card = $(`#dc-${CSS.escape(did)}`);
+  card.classList.add('answered');
+  card.classList.remove('skipped');
+  card.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o.dataset.c === label));
+
+  const a = S.answers[did];
+  $(`#dv-${CSS.escape(did)}`).innerHTML = `
+    <div class="derived">“${esc(a.custom || implied)}”</div>
+    <div class="frow">
+      <span class="flab">How firmly?</span>
+      ${['absolute','strong','preference'].map(f =>
+        `<button class="chip ${a.strength===f?'sel':''}" data-d="${esc(did)}" data-f="${f}">${f}</button>`
+      ).join('')}
+      <button class="chip skip" data-d="${esc(did)}" data-skip="1">skip</button>
+    </div>
+    <input class="reword" data-d="${esc(did)}" placeholder="Reword in your own words…" value="${esc(a.custom)}">`;
+
+  $$(`[data-f][data-d="${did}"]`).forEach(c => c.onclick = () => {
+    S.answers[did].strength = c.dataset.f;
+    choose(did, S.answers[did].choice);
+  });
+  $(`[data-skip][data-d="${did}"]`).onclick = () => skip(did);
+  const rw = $(`.reword[data-d="${did}"]`);
+  rw.oninput = () => { S.answers[did].custom = rw.value; };
+
+  updateCounts();
+}
+
+function skip(did){
+  S.answers[did] = {choice:'', strength:'strong', custom:'', skipped:true};
+  const card = $(`#dc-${CSS.escape(did)}`);
+  card.classList.add('skipped');
+  card.classList.remove('answered');
+  card.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+  $(`#dv-${CSS.escape(did)}`).innerHTML =
+    `<div class="frow"><span class="flab">skipped —</span>
+     <button class="chip" onclick="location.reload()">reset all</button></div>`;
+  updateCounts();
+}
+
+function answeredCount(){
+  return Object.values(S.answers).filter(a => !a.skipped && a.choice).length;
+}
+function updateCounts(){
+  const n = answeredCount();
+  const txt = `${n} of ${S.dilemmas.length} answered`;
+  $('#c1').textContent = txt;
+  $('#c1b').textContent = txt;
+  $('#toReview').disabled = n === 0;
+}
+
+/* ---------- 02 review ---------- */
+$('#toReview').onclick = async () => {
+  try{
+    const data = await api('/api/build', {
+      label:  $('#label').value.trim() || 'me',
+      locale: $('#locale').value.trim() || null,
+      answers: S.answers,
+    });
+    S.file = data.file;
+    renderReview();
+    goto('p2');
+  }catch(e){ toast(e.message); }
+};
+
+const GROUPS = [
+  ['absolute',   'Hard lines',    'never crossed, even on request'],
+  ['strong',     'Held defaults', 'yield only to an explicit override'],
+  ['preference', 'Leanings',      'shape tone; yield to context'],
+];
+
+function renderReview(){
+  const vals = S.file.values || [];
+  let order = 0;
+
+  $('#vlist').innerHTML = GROUPS.map(([f, title, note]) => {
+    const group = vals.filter(v => v.firmness === f);
+    if(!group.length) return '';
+    return `<div class="vgroup">
+      <div class="gtitle"><span>${title} <span style="opacity:.6">· ${note}</span></span><span class="gn">${group.length}</span></div>
+      ${group.map(v => `
+        <div class="vrow">
+          <div class="vord">${++order}</div>
+          <div class="vtext">${esc(v.statement)}
+            <div class="vmeta">${esc(v.id)} · axis ${esc(v.axis||'—')}</div>
+          </div>
+          <div class="vw">${Number(v.weight).toFixed(2)}</div>
+        </div>`).join('')}
+    </div>`;
+  }).join('') || '<div class="hint">No values yet — answer at least one dilemma.</div>';
+
+  const D = S.file.directives || {};
+  const opts = {
+    tone:['plain','warm','terse','socratic','formal'],
+    verbosity:['minimal','balanced','thorough'],
+    disagreement:['voice_it','defer','flag_once'],
+    refusal_style:['explain','terse','redirect'],
+    uncertainty:['admit','hedge','commit'],
+  };
+  $('#conduct').innerHTML = Object.entries(opts).map(([k, list]) => `
+    <div class="fld">
+      <label>${k.replace(/_/g,' ')}</label>
+      <select data-k="${k}">
+        ${list.map(o => `<option value="${o}" ${D[k]===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+    </div>`).join('');
+
+  $$('#conduct select').forEach(sel => sel.onchange = () => {
+    S.file.directives[sel.dataset.k] = sel.value;
+  });
+}
+
+/* ---------- 03 compile ---------- */
+$('#toCompile').onclick = () => { goto('p3'); doCompile(); };
+$$('.tab').forEach(t => t.onclick = () => {
+  $$('.tab').forEach(x => x.classList.toggle('on', x === t));
+  S.target = t.dataset.t;
+  doCompile();
+});
+
+async function doCompile(){
+  if(!S.file){ toast('Answer a dilemma first'); return; }
+  $('#artifact').textContent = 'compiling…';
+  try{
+    const data = await api('/api/compile', {file:S.file, target:S.target});
+    $('#artifact').textContent = data.artifact;
+  }catch(e){ $('#artifact').textContent = `error: ${e.message}`; }
+}
+
+$('#copy').onclick = async () => {
+  try{
+    await navigator.clipboard.writeText($('#artifact').textContent);
+    toast('Copied');
+  }catch{ toast('Clipboard blocked — select and copy manually'); }
+};
+
+$('#save').onclick = async () => {
+  if(!S.file){ toast('Nothing to save'); return; }
+  try{
+    const d = await api('/api/save', {file:S.file, bump_revision:true});
+    $('#digestLabel').textContent = d.digest.slice(0,16);
+    toast(`Saved to ${d.path}`);
+  }catch(e){ toast(e.message); }
+};
+
+/* ---------- 04 prove ---------- */
+$('#toProve').onclick = () => goto('p4');
+
+$('#rt').onchange = () => {
+  const v = $('#rt').value;
+  const notes = {
+    mock: 'The mock runtime exercises the whole pipeline with nothing installed. It proves the code path, not the model — reports from it are stamped as mock.',
+    ollama: 'Runs against a local Ollama daemon. Nothing leaves this machine. Requires `ollama serve` and a pulled model.',
+    'openai-compat': 'Any /v1/chat/completions endpoint. If the host is not 127.0.0.1, your compiled values file will be transmitted to it.',
+  };
+  $('#rtNote').textContent = notes[v];
+};
+
+$('#run').onclick = async () => {
+  if(!S.file){ toast('Build a file first'); return; }
+  const btn = $('#run');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>running…';
+  try{
+    const data = await api('/api/probe', {
+      file: S.file,
+      runtime: $('#rt').value,
+      model: $('#model').value.trim() || null,
+      host: $('#host').value.trim() || null,
+      temperature: parseFloat($('#temp').value) || 0,
+    });
+    S.report = data;
+    renderReport(data);
+    $('#dl').disabled = false;
+  }catch(e){
+    toast(e.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Run probe suite';
+  }
+};
+
+function cls(v){ return v > 0.02 ? 'up' : v < -0.02 ? 'down' : 'flat'; }
+function pct(v){ return `${(v*100).toFixed(0)}%`; }
+
+function renderReport(r){
+  const m = r.metrics;
+  $('#metrics').innerHTML = `
+    <div class="mcell"><div class="mval big ${cls(m.delta)}">${m.delta>=0?'+':''}${m.delta.toFixed(2)}</div><div class="mlab">delta</div></div>
+    <div class="mcell"><div class="mval">${pct(m.alignment_baseline)}</div><div class="mlab">without file</div></div>
+    <div class="mcell"><div class="mval">${pct(m.alignment_steered)}</div><div class="mlab">with file</div></div>
+    <div class="mcell"><div class="mval">${pct(m.flip_rate)}</div><div class="mlab">flip rate</div></div>
+    <div class="mcell"><div class="mval">${m.scored}</div><div class="mlab">scored</div></div>
+    <div class="mcell"><div class="mval">${m.unclear_steered}</div><div class="mlab">unclear</div></div>`;
+
+  const axes = Object.entries(m.by_axis || {});
+  $('#axes').innerHTML = axes.length ? `
+    <div class="gtitle" style="margin-top:20px"><span>By axis</span></div>
+    ${axes.sort().map(([name, s]) => `
+      <div class="axbar">
+        <div class="axname">${esc(name)}</div>
+        <div class="axtrack"><div class="axfill" style="width:${Math.max(0,Math.min(1,s.alignment_steered))*100}%"></div></div>
+        <div class="axd ${cls(s.delta)}">${s.delta>=0?'+':''}${s.delta.toFixed(2)}</div>
+      </div>`).join('')}` : '';
+
+  const v = r.verdict || '';
+  const kind = /STRONG|MODERATE/.test(v) ? 'good'
+             : /NEGATIVE|INCONCLUSIVE/.test(v) ? 'warn' : '';
+  $('#verdict').innerHTML = `<div class="verdict ${kind}">${esc(v)}</div>`;
+
+  const skipped = (r.skipped || []).length
+    ? `<div class="notice">${r.skipped.length} dilemma(s) skipped — your file expresses no value bearing on them, so scoring them would measure the dilemma bank rather than your file.</div>`
+    : '';
+
+  $('#probes').innerHTML = `
+    <div class="gtitle"><span>Every probe, both conditions</span><span class="gn">${r.probes.length}</span></div>
+    ${skipped}
+    ${r.probes.map(p => `
+      <div class="prow">
+        <div class="phead">
+          <span class="pid">${esc(p.dilemma_id)} <span style="color:var(--fg-faint)">· ${esc(p.axis)} · expects ${esc(p.expected)}</span></span>
+          <span>
+            <span class="badge ${p.baseline_aligned?'a':(p.baseline_class==='unclear'?'u':'n')}">bare ${p.baseline_aligned?'aligned':'not'}</span>
+            <span class="badge ${p.steered_aligned?'a':(p.steered_class==='unclear'?'u':'n')}">with file ${p.steered_aligned?'aligned':'not'}</span>
+            ${p.flipped?'<span class="badge u">flipped</span>':''}
+          </span>
+        </div>
+        <div class="presp"><span class="pl">WITHOUT FILE · ${esc(p.baseline_class)}</span>${esc(p.baseline_text)}</div>
+        <div class="presp" style="border-left-color:var(--amber-deep)"><span class="pl">WITH FILE · ${esc(p.steered_class)}</span>${esc(p.steered_text)}</div>
+      </div>`).join('')}`;
+}
+
+$('#dl').onclick = () => {
+  if(!S.report) return;
+  const blob = new Blob([JSON.stringify(S.report, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ethos-probe-report.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+/* ---------- boot ---------- */
+(async function init(){
+  try{
+    await loadDilemmas();
+  }catch(e){
+    $('#dilemmas').innerHTML = `<div class="notice">Could not load the dilemma bank: ${esc(e.message)}</div>`;
+  }
+
+  try{
+    const {runtimes} = await api('/api/runtimes');
+    const live = runtimes.find(r => r.available && r.kind !== 'mock');
+    const dot = $('#rtDot');
+    if(live){
+      dot.className = 'dot on';
+      $('#rtLabel').textContent = live.describe;
+      $('#rt').value = live.kind;
+      $('#rt').dispatchEvent(new Event('change'));
+    }else{
+      dot.className = 'dot off';
+      $('#rtLabel').textContent = 'no local model — mock available';
+    }
+  }catch{
+    $('#rtLabel').textContent = 'runtime unknown';
+  }
+
+  try{
+    const f = await api('/api/file');
+    if(f.exists && f.file){
+      S.file = f.file;
+      $('#label').value = f.file.subject?.label || 'me';
+      if(f.file.subject?.locale) $('#locale').value = f.file.subject.locale;
+      if(f.integrity) $('#digestLabel').textContent =
+        (f.file.integrity?.digest || 'unsigned').slice(0,16);
+      renderReview();
+      toast(`Loaded ${f.path}`);
+    }
+  }catch{ /* no existing file — expected on first run */ }
+})();
+</script>
+</body>
+</html>

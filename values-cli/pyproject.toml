@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rossa-values"
+version = "1.0.0"
+description = "ROSSA — Your AI, Your Values. Portable, tamper-evident values for AI. Sentient Open Source AGI Grant RFP #08."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+keywords = ["ai", "alignment", "values", "steerability", "open-source", "local-first"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Core is stdlib-only, on purpose: the tool should not be heavier than the
+# thing it measures, and it must run on hardware people already own.
+dependencies = []
+
+[project.optional-dependencies]
+# Ed25519 signing. Digest integrity works without it.
+sign = ["cryptography>=41.0"]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+values = "rossa.cli:main"
+
+[project.urls]
+Specification = "https://github.com/wabrent/Values/blob/main/values-cli/SPEC.md"
+Source = "https://github.com/wabrent/Values/tree/main/values-cli"
+
+[tool.setuptools]
+packages = ["rossa"]
+
+[tool.setuptools.package-data]
+rossa = ["ui/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
