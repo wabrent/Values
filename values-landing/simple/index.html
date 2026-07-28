@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Values — Your AI, Your Rules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b0a08;color:#f5efe4;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+::selection{background:#e8702a;color:#fff}
+.wrap{max-width:620px;width:100%}
+.brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px}
+.brand svg{width:24px;height:24px}
+.brand span{font-size:1.1rem;font-weight:600;letter-spacing:.16em}
+h1{font-weight:400;font-size:clamp(1.6rem,3.5vw,2.2rem);text-align:center;line-height:1.15;margin-bottom:8px}
+h1 em{color:#e8702a;font-style:italic}
+.sub{text-align:center;color:rgba(255,255,255,.45);font-size:.92rem;margin-bottom:32px;line-height:1.5}
+
+.card{border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px;background:rgba(255,255,255,.02);backdrop-filter:blur(12px);min-height:200px}
+.qn{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#e8702a;margin-bottom:12px}
+.qt{font-size:1.06rem;line-height:1.55;margin-bottom:20px;color:rgba(255,255,255,.85)}
+.qo{display:flex;flex-direction:column;gap:8px}
+.qbtn{text-align:left;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;background:rgba(255,255,255,.02);color:rgba(255,255,255,.75);font-size:.87rem;cursor:pointer;transition:.15s;font-family:inherit;line-height:1.4}
+.qbtn:hover{border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.04)}
+
+.bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:14px}
+.fill{height:100%;background:#e8702a;border-radius:2px;transition:width .25s;width:0%}
+
+.result{margin-top:24px}
+.res h2{font-weight:400;font-size:1.25rem;text-align:center;margin-bottom:6px}
+.res p{text-align:center;color:rgba(255,255,255,.4);font-size:.82rem;margin-bottom:12px}
+pre{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.65;color:rgba(255,255,255,.55);white-space:pre-wrap;word-break:break-word;position:relative}
+.btn{position:absolute;top:10px;right:10px;background:#e8702a;color:#fff;font-weight:600;font-size:.73rem;padding:6px 14px;border-radius:99px;border:none;cursor:pointer;font-family:inherit;transition:transform .15s}
+.btn:hover{transform:scale(1.04)}
+
+.info{text-align:center;margin-top:32px;font-size:.74rem;color:rgba(255,255,255,.2)}
+.info a{color:rgba(255,255,255,.4);text-decoration:none}
+.info a:hover{color:rgba(255,255,255,.6)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="brand">
+<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#e8702a" stroke-width="1.4"/><path d="M12 4v16M4 12h16" stroke="#e8702a" stroke-width="1" opacity=".4"/><circle cx="12" cy="12" r="3.2" fill="#e8702a"/></svg>
+<span>Values</span>
+</div>
+<h1>Your AI. <em>Your rules.</em></h1>
+<p class="sub">5 questions. 2 minutes. Get a prompt that changes how any AI answers you.</p>
+
+<div id="quiz">
+<div class="card">
+<div class="qn" id="qn"></div>
+<div class="qt" id="qt"></div>
+<div class="qo" id="qo"></div>
+</div>
+<div class="bar"><div class="fill" id="fill"></div></div>
+</div>
+
+<div class="result" id="res" style="display:none">
+<div class="res"><h2>Your prompt is ready.</h2><p>Copy into ChatGPT → Settings → Custom Instructions.</p></div>
+<div style="position:relative"><pre id="rp"></pre><button class="btn" id="cp">Copy</button></div>
+</div>
+
+<div class="info">
+<a href="https://values-landing.vercel.app">Full landing page</a> · <a href="https://github.com/wabrent/Values">GitHub</a>
+</div>
+</div>
+
+<script>
+const D=[
+{q:'You spent two years on a startup. Flat users, no revenue, savings gone. "Be honest..."',a:'Say it plainly',b:'Lead with care',at:'Give me the hard answer plainly. Do not cushion it.',bt:'Give me hard news with context and care around it.'},
+{q:'You\'re proud of a poem that\'s genuinely weak. What should the AI say?',a:'Be honest about it',b:'Support me first',at:'Give me real critique even when I\'m proud. Don\'t flatter me.',bt:'Meet me where I am. Encouragement first, critique only if I ask.'},
+{q:'You mention a myth as fact while asking something unrelated. Should the AI correct you?',a:'Correct me mid-task',b:'Stay on my task',at:'Correct me when I\'m wrong, even mid-task, even when I didn\'t ask.',bt:'Stay on the task I gave you. Don\'t audit my asides.'},
+{q:'You had a terrible day and just want to vent. The AI sees an obvious fix.',a:'Just listen',b:'Tell me the fix',at:'When I\'m venting, listen and reflect it back — don\'t solve it unless I ask.',bt:'Even when I\'m venting, tell me the fix you can see.'},
+{q:'"Based on what you know about me, should I move?" The AI cannot know.',a:'Say you can\'t know',b:'Give your best guess',at:'When you can\'t know, say so. Don\'t guess at things about my life.',bt:'Give me your best guess even when you can\'t be sure — just label it.'}
+];
+let i=0,c=[];
+function show(){if(i>=D.length){done()}else{document.getElementById('qn').textContent=`Question ${i+1} of ${D.length}`;document.getElementById('qt').textContent=D[i].q;document.getElementById('qo').innerHTML=`<button class="qbtn" id="qa">A. ${D[i].a}</button><button class="qbtn" id="qb">B. ${D[i].b}</button>`;document.getElementById('fill').style.width=`${(i/D.length)*100}%`;document.getElementById('qa').onclick=()=>{c[i]=D[i].at;i++;show()};document.getElementById('qb').onclick=()=>{c[i]=D[i].bt;i++;show()}}}
+function done(){document.getElementById('quiz').style.display='none';document.getElementById('res').style.display='block';const p='# MY VALUES\n# Copy this into ChatGPT Settings → Custom Instructions\n\n'+c.map((x,n)=>'- '+x).join('\n');document.getElementById('rp').textContent=p;document.getElementById('cp').onclick=()=>{navigator.clipboard.writeText(p);document.getElementById('cp').textContent='Copied!';setTimeout(()=>document.getElementById('cp').textContent='Copy',1500)}}
+show();
+</script>
+</body>
+</html>
