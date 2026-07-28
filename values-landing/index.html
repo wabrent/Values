@@ -288,38 +288,39 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 })
 document.querySelectorAll('.scroll-fade').forEach(el => observer.observe(el))
 
-// === Interactive Quiz ===
-const D = [
-  {id:'hard_news_softening',q:'You spent two years on a startup. Flat users, no revenue, savings gone. "Be honest — is this working?"',a:{label:'Say it plainly',text:'Give me the hard answer plainly. Do not cushion it.'},b:{label:'Lead with care',text:'Give me hard news with context and care around it.'}},
-  {id:'flattery_resistance',q:'You just finished a poem and you\'re proud of it. The poem is weak. What should the AI say?',a:{label:'Be honest about it',text:'Give me real critique even when I\'m proud. Don\'t flatter me.'},b:{label:'Support me first',text:'Meet me where I am. Encouragement first, critique only if I ask.'}},
-  {id:'unsolicited_correction',q:'You mention a myth as fact while asking about something unrelated. Should the AI correct you?',a:{label:'Correct me mid-task',text:'Correct me when I\'m wrong, even mid-task, even when I didn\'t ask.'},b:{label:'Stay on my task',text:'Stay on the task I gave you. Don\'t audit my asides.'}},
-  {id:'vent_or_fix',q:'You had a terrible day. You just want someone to listen. The AI sees an obvious fix. Should it offer it?',a:{label:'Just listen',text:'When I\'m venting, listen and reflect it back — don\'t solve it unless I ask.'},b:{label:'Tell me the fix',text:'Even when I\'m venting, tell me the fix you can see.'}},
-  {id:'speculation_boundary',q:'"Based on what you know about me, should I move to a different city?" The AI cannot know this.',a:{label:'Say you can\'t know',text:'When you can\'t know, say so. Don\'t guess at things about my life.'},b:{label:'Give your best guess',text:'Give me your best guess even when you can\'t be sure — just label it.'}},
-];
-let qIdx=0, choices=[];
+// === Quiz ===
+(function(){
+var D=[
+ {id:'hard_news_softening',q:'You spent two years on a startup. Flat users, no revenue, savings gone. "Be honest — is this working?"',a:{label:'Say it plainly',text:'Give me the hard answer plainly. Do not cushion it.'},b:{label:'Lead with care',text:'Give me hard news with context and care around it.'}},
+ {id:'flattery_resistance',q:'You just finished a poem and you\'re proud of it. The poem is weak. What should the AI say?',a:{label:'Be honest about it',text:'Give me real critique even when I\'m proud. Don\'t flatter me.'},b:{label:'Support me first',text:'Meet me where I am. Encouragement first, critique only if I ask.'}},
+ {id:'unsolicited_correction',q:'You mention a myth as fact while asking about something unrelated. Should the AI correct you?',a:{label:'Correct me mid-task',text:'Correct me when I\'m wrong, even mid-task, even when I didn\'t ask.'},b:{label:'Stay on my task',text:'Stay on the task I gave you. Don\'t audit my asides.'}},
+ {id:'vent_or_fix',q:'You had a terrible day. You just want someone to listen. The AI sees an obvious fix. Should it offer it?',a:{label:'Just listen',text:'When I\'m venting, listen and reflect it back — don\'t solve it unless I ask.'},b:{label:'Tell me the fix',text:'Even when I\'m venting, tell me the fix you can see.'}},
+ {id:'speculation_boundary',q:'"Based on what you know about me, should I move to a different city?" The AI cannot know this.',a:{label:'Say you can\'t know',text:'When you can\'t know, say so. Don\'t guess at things about my life.'},b:{label:'Give your best guess',text:'Give me your best guess even when you can\'t be sure — just label it.'}}
+],qIdx=0,choices=[];
 
 function showQ(){
   if(qIdx>=D.length){ showResult(); return }
-  const d=D[qIdx];
-  $('#qNum').textContent=`Question ${qIdx+1} of ${D.length}`;
-  $('#qText').textContent=d.q;
-  $('#qOpts').innerHTML='<button class="qbtn" data-c="a" style="text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;background:rgba(255,255,255,.03);color:#fff;font-size:.9rem;cursor:pointer;transition:.15s;line-height:1.45">'+d.a.label+'</button><button class="qbtn" data-c="b" style="text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;background:rgba(255,255,255,.03);color:#fff;font-size:.9rem;cursor:pointer;transition:.15s;line-height:1.45">'+d.b.label+'</button>';
-  $('#qProg').innerHTML='<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+((qIdx/D.length)*100)+'%;background:#e8702a;border-radius:2px;transition:width .3s"></div></div>';
-  $$('.qbtn').forEach(b=>b.onclick=function(){ choices[qIdx]=this.dataset.c==='a'?D[qIdx].a.text:D[qIdx].b.text; qIdx++; showQ(); });
-  $$('.qbtn').forEach(b=>{b.onmouseenter=()=>b.style.borderColor='rgba(255,255,255,.3)';b.onmouseleave=()=>b.style.borderColor='rgba(255,255,255,.12)'});
+  var d=D[qIdx];
+  document.getElementById('qNum').textContent='Question '+(qIdx+1)+' of '+D.length;
+  document.getElementById('qText').textContent=d.q;
+  document.getElementById('qOpts').innerHTML='<button class="qbtn" data-c="a" style="text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;background:rgba(255,255,255,.03);color:#fff;font-size:.9rem;cursor:pointer;transition:.15s;line-height:1.45;font-family:inherit">'+d.a.label+'</button><button class="qbtn" data-c="b" style="text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;background:rgba(255,255,255,.03);color:#fff;font-size:.9rem;cursor:pointer;transition:.15s;line-height:1.45;font-family:inherit">'+d.b.label+'</button>';
+  document.getElementById('qProg').innerHTML='<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+((qIdx/D.length)*100)+'%;background:#e8702a;border-radius:2px;transition:width .3s"></div></div>';
+  var btns=document.querySelectorAll('.qbtn');
+  btns.forEach(function(b){b.onclick=function(){choices[qIdx]=this.dataset.c==='a'?D[qIdx].a.text:D[qIdx].b.text;qIdx++;showQ()}});
+  btns.forEach(function(b){b.onmouseenter=function(){b.style.borderColor='rgba(255,255,255,.3)'};b.onmouseleave=function(){b.style.borderColor='rgba(255,255,255,.12)'}});
 }
 
 function showResult(){
-  $('#quiz').style.display='none';
-  $('#result').style.display='block';
-  const prompt='# MY VALUES\n# Copy this into ChatGPT Settings → Custom Instructions\n\n'+choices.map((c,i)=>'- '+c).join('\n');
-  $('#resultPrompt').textContent=prompt;
-  document.getElementById('copyBtn').onclick=()=>{navigator.clipboard.writeText(prompt);document.getElementById('copyBtn').textContent='Copied!';setTimeout(()=>document.getElementById('copyBtn').textContent='Copy',1500)};
-  setTimeout(()=>document.getElementById('result').scrollIntoView({behavior:'smooth'}),100);
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('result').style.display='block';
+  var prompt='# MY VALUES\n# Copy this into ChatGPT Settings → Custom Instructions\n\n'+choices.map(function(c,i){return '- '+c}).join('\n');
+  document.getElementById('resultPrompt').textContent=prompt;
+  document.getElementById('copyBtn').onclick=function(){navigator.clipboard.writeText(prompt);document.getElementById('copyBtn').textContent='Copied!';setTimeout(function(){document.getElementById('copyBtn').textContent='Copy'},1500)};
+  setTimeout(function(){document.getElementById('result').scrollIntoView({behavior:'smooth'})},100);
 }
 
-const $=(s)=>document.querySelector(s),$$=(s)=>Array.from(document.querySelectorAll(s));
 showQ();
+})();
 </script>
 </body>
 </html>
