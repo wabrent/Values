@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EarthPulse — live planetary monitoring</title>
+<script src="https://unpkg.com/maplibre-gl@4.6.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.6.0/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0a0a0f;font-family:system-ui,-apple-system,sans-serif}
+#map{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.maplibregl-popup-content{background:#12121a;color:#e0e0e0;border:1px solid #222;border-radius:10px;padding:14px 16px;font-size:.8rem;line-height:1.5}
+.maplibregl-popup-tip{border-top-color:#12121a!important}
+
+#panel{position:fixed;top:16px;left:16px;z-index:10;background:rgba(10,10,15,.92);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px;min-width:260px;backdrop-filter:blur(16px)}
+#panel h2{font-size:.95rem;font-weight:600;color:#e8702a;margin-bottom:4px;letter-spacing:.04em}
+#panel .sub{font-size:.68rem;color:rgba(255,255,255,.35);margin-bottom:14px}
+
+.layer{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:.78rem;color:rgba(255,255,255,.7);transition:color .15s}
+.layer:hover{color:#fff}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot.r{background:#ff4444;box-shadow:0 0 8px #ff4444}.dot.a{background:#ff8c00;box-shadow:0 0 8px #ff8c00}.dot.b{background:#4488ff;box-shadow:0 0 8px #4488ff}.dot.g{background:#44cc66;box-shadow:0 0 8px #44cc66}.dot.p{background:#cc44ff;box-shadow:0 0 8px #cc44ff}.dot.y{background:#ffdd44;box-shadow:0 0 8px #ffdd44}
+.count{font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.3);margin-left:auto}
+
+#status{position:fixed;bottom:16px;left:16px;z-index:10;font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.3);background:rgba(10,10,15,.85);padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.06)}
+#badge{position:fixed;top:16px;right:16px;z-index:10;font-family:monospace;font-size:.6rem;color:rgba(255,255,255,.25);background:rgba(10,10,15,.85);padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="panel">
+  <h2>🌍 EarthPulse</h2>
+  <div class="sub">Real-time planetary monitoring · open data</div>
+  <div class="layer" onclick="toggle('fires')"><span class="dot r"></span>Wildfires <span class="count" id="c-fires">—</span></div>
+  <div class="layer" onclick="toggle('quakes')"><span class="dot a"></span>Earthquakes <span class="count" id="c-quakes">—</span></div>
+  <div class="layer" onclick="toggle('air')"><span class="dot b"></span>Air Quality (PM2.5) <span class="count" id="c-air">—</span></div>
+  <div class="layer" onclick="toggle('volcanoes')"><span class="dot p"></span>Volcanoes <span class="count" id="c-volcanoes">—</span></div>
+  <div class="layer" onclick="toggle('weather')"><span class="dot y"></span>Severe Weather <span class="count" id="c-weather">—</span></div>
+  <div class="layer" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;color:rgba(255,255,255,.35);font-size:.66rem">Toggle layers · click markers for detail</div>
+</div>
+
+<div id="badge">open source · apache-2.0</div>
+<div id="status">loading data feeds...</div>
+
+<script>
+var map=new maplibregl.Map({container:'map',style:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',center:[0,20],zoom:2.2,attributionControl:false});
+map.addControl(new maplibregl.NavigationControl(),'bottom-right');
+
+var layers={fires:false,quakes:false,air:false,volcanoes:false,weather:false};
+var counts={};
+
+function toggle(id){
+  layers[id]=!layers[id];
+  if(layers[id]){fetchData(id)}else{hideLayer(id)}
+}
+
+function hideLayer(id){
+  if(map.getLayer(id+'-layer')){map.setLayoutProperty(id+'-layer','visibility','none')}
+  if(map.getSource(id+'-source')){map.setPaintProperty(id+'-layer','visibility','none')}
+}
+
+function addGeoJSON(id,data,color,size){
+  var src=id+'-source';
+  if(map.getSource(src)){map.getSource(src).setData(data);map.setLayoutProperty(id+'-layer','visibility','visible');return}
+  map.addSource(src,{type:'geojson',data:data});
+  map.addLayer({id:id+'-layer',type:'circle',source:src,paint:{'circle-radius':size,'circle-color':color,'circle-opacity':.8,'circle-stroke-width':1,'circle-stroke-color':'rgba(0,0,0,.5)'}});
+  counts[id]=data.features.length;
+  document.getElementById('c-'+id).textContent=data.features.length;
+  updateStatus();
+}
+
+// ---- USGS Earthquakes (24h, M>2.5) ----
+async function fetchQuakes(){
+  try{
+    var r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson');
+    var d=await r.json();
+    d.features.forEach(function(f){f.properties.mag=f.properties.mag||0});
+    addGeoJSON('quakes',d,'#ff8c00',['interpolate',['linear'],['get','mag'],2,4,5,12,7,24]);
+    map.on('click','quakes-layer',function(e){var p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML('<b>M'+p.mag+'</b> — '+p.place+'<br><small>'+new Date(p.time).toLocaleString()+'</small>').addTo(map)});
+  }catch(e){console.log('USGS:',e)}
+}
+
+// ---- NASA FIRMS Fires (24h) ----
+async function fetchFires(){
+  try{
+    var r=await fetch('https://firms.modaps.eosdis.nasa.gov/api/country/csv/89bb28929af2f54edb9f18a7f4f65ae5/VIIRS_NOAA20_NRT/WORLD/1');
+    var t=await r.text();
+    var lines=t.trim().split('\n').slice(1);
+    var features=lines.map(function(l){
+      var c=l.split(',');
+      return {type:'Feature',geometry:{type:'Point',coordinates:[parseFloat(c[1]),parseFloat(c[0])]},properties:{bright:parseFloat(c[2]),date:c[5]}};
+    });
+    addGeoJSON('fires',{type:'FeatureCollection',features:features},'#ff4444',['interpolate',['linear'],['get','bright'],300,4,350,8,400,14]);
+    map.on('click','fires-layer',function(e){var p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML('<b>Fire hotspot</b><br>Brightness: '+p.bright+'K<br><small>'+p.date+'</small>').addTo(map)});
+  }catch(e){console.log('FIRMS:',e)}
+}
+
+// ---- OpenAQ Air Quality ----
+async function fetchAir(){
+  try{
+    var r=await fetch('https://api.openaq.org/v3/locations?limit=500&parameter_id=2&sort=desc(lastUpdated)');
+    var d=await r.json();
+    var features=d.results.map(function(l){
+      var v=l.sensors&&l.sensors[0]?l.sensors[0].latest?l.sensors[0].latest.value:0:0;
+      var c=v>150?'#cc0000':v>75?'#ff6600':v>35?'#ffaa00':'#44cc66';
+      return {type:'Feature',geometry:{type:'Point',coordinates:[l.coordinates.longitude,l.coordinates.latitude]},properties:{value:v,location:l.name||l.locality||'',color:c}};
+    });
+    addGeoJSON('air',{type:'FeatureCollection',features:features},['get','color'],5);
+    map.on('click','air-layer',function(e){var p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML('<b>PM2.5: '+p.value+' µg/m³</b><br>'+p.location).addTo(map)});
+  }catch(e){console.log('OpenAQ:',e)}
+}
+
+// ---- Smithsonian Volcanoes ----
+async function fetchVolcanoes(){
+  try{
+    var r=await fetch('https://raw.githubusercontent.com/nicomwilliams/volcano-data/main/volcanoes.geojson');
+    var d=await r.json();
+    addGeoJSON('volcanoes',d,'#cc44ff',6);
+    map.on('click','volcanoes-layer',function(e){var p=e.features[0].properties;new maplibregl.Popup().setLngLat(e.lngLat).setHTML('<b>'+p.VolcanoName+'</b><br>'+p.Country+'<br><small>Elevation: '+p.Elevation+'m</small>').addTo(map)});
+  }catch(e){console.log('Volcanoes:',e)}
+}
+
+// ---- OpenWeatherMap Alerts ----
+async function fetchWeather(){
+  try{
+    var r=await fetch('https://api.openweathermap.org/data/2.5/weather?lat=0&lon=0&appid=b6907d289e10d714a6e88b30761fae22'); // placeholder
+    document.getElementById('c-weather').textContent='pro tier';
+  }catch(e){}
+}
+
+function updateStatus(){
+  var t=0;for(var k in counts)t+=counts[k];
+  document.getElementById('status').textContent='live · '+t+' events across '+Object.keys(counts).length+' layers';
+}
+function fetchData(id){
+  var fns={fires:fetchFires,quakes:fetchQuakes,air:fetchAir,volcanoes:fetchVolcanoes,weather:fetchWeather};
+  if(fns[id])fns[id]();
+}
+
+// Auto-load
+fetchQuakes();
+fetchFires();
+fetchAir();
+fetchVolcanoes();
+layers.quakes=true;layers.fires=true;layers.air=true;layers.volcanoes=true;
+
+setInterval(function(){
+  fetchQuakes();fetchFires();fetchAir();
+  document.getElementById('status').textContent='auto-refreshed · '+(counts.fires||0)+' fires · '+(counts.quakes||0)+' quakes · '+(counts.air||0)+' air stations';
+}, 300000);
+</script>
+</body>
+</html>
