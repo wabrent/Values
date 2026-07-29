@@ -4,83 +4,104 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Values — Your AI, Your Rules</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0b0a08;color:#f5efe4;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
-::selection{background:#e8702a;color:#fff}
-.wrap{max-width:620px;width:100%}
-.brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px}
-.brand svg{width:24px;height:24px}
-.brand span{font-size:1.1rem;font-weight:600;letter-spacing:.16em}
-h1{font-weight:400;font-size:clamp(1.6rem,3.5vw,2.2rem);text-align:center;line-height:1.15;margin-bottom:8px}
+body{background:#0b0a08;color:#f5efe4;font-family:Inter,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.w{max-width:580px;width:100%}
+h1{font-weight:400;font-size:1.8rem;text-align:center;margin-bottom:6px}
 h1 em{color:#e8702a;font-style:italic}
-.sub{text-align:center;color:rgba(255,255,255,.45);font-size:.92rem;margin-bottom:32px;line-height:1.5}
-
-.card{border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px;background:rgba(255,255,255,.02);backdrop-filter:blur(12px);min-height:200px}
-.qn{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#e8702a;margin-bottom:12px}
-.qt{font-size:1.06rem;line-height:1.55;margin-bottom:20px;color:rgba(255,255,255,.85)}
-.qo{display:flex;flex-direction:column;gap:8px}
-.qbtn{text-align:left;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;background:rgba(255,255,255,.02);color:rgba(255,255,255,.75);font-size:.87rem;cursor:pointer;transition:.15s;font-family:inherit;line-height:1.4}
-.qbtn:hover{border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.04)}
-
-.bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:14px}
-.fill{height:100%;background:#e8702a;border-radius:2px;transition:width .25s;width:0%}
-
-.result{margin-top:24px}
-.res h2{font-weight:400;font-size:1.25rem;text-align:center;margin-bottom:6px}
-.res p{text-align:center;color:rgba(255,255,255,.4);font-size:.82rem;margin-bottom:12px}
-pre{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.65;color:rgba(255,255,255,.55);white-space:pre-wrap;word-break:break-word;position:relative}
-.btn{position:absolute;top:10px;right:10px;background:#e8702a;color:#fff;font-weight:600;font-size:.73rem;padding:6px 14px;border-radius:99px;border:none;cursor:pointer;font-family:inherit;transition:transform .15s}
-.btn:hover{transform:scale(1.04)}
-
-.info{text-align:center;margin-top:32px;font-size:.74rem;color:rgba(255,255,255,.2)}
-.info a{color:rgba(255,255,255,.4);text-decoration:none}
-.info a:hover{color:rgba(255,255,255,.6)}
+.sub{text-align:center;color:rgba(255,255,255,.4);font-size:.9rem;margin-bottom:30px}
+.card{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:32px;background:rgba(255,255,255,.02);min-height:200px}
+#qn{font-size:.68rem;color:#e8702a;margin-bottom:16px;letter-spacing:.08em;text-transform:uppercase}
+#qt{font-size:1.08rem;line-height:1.55;margin-bottom:24px;color:rgba(255,255,255,.85)}
+.qbtn{display:block;width:100%;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;background:rgba(255,255,255,.03);color:#fff;font-size:.9rem;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:.15s;line-height:1.4}
+.qbtn:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06)}
+#prog{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:16px}
+#fill{height:100%;background:#e8702a;width:0;transition:width .3s}
+#res{display:none;margin-top:28px}
+#res h2{font-weight:400;font-size:1.3rem;text-align:center;margin-bottom:6px}
+#res .st{text-align:center;color:rgba(255,255,255,.4);font-size:.85rem;margin-bottom:14px}
+pre{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;font-family:monospace;font-size:.75rem;line-height:1.6;color:rgba(255,255,255,.55);white-space:pre-wrap;position:relative}
+#cb{position:absolute;top:10px;right:10px;background:#e8702a;color:#fff;font-weight:600;font-size:.75rem;padding:7px 16px;border-radius:99px;border:none;cursor:pointer;font-family:inherit}
+#cb:hover{transform:scale(1.04)}
+.ft{text-align:center;margin-top:36px;font-size:.72rem;color:rgba(255,255,255,.2)}
+.ft a{color:rgba(255,255,255,.35);text-decoration:none}
 </style>
 </head>
 <body>
+<div class="w">
 
-<div class="wrap">
-<div class="brand">
-<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#e8702a" stroke-width="1.4"/><path d="M12 4v16M4 12h16" stroke="#e8702a" stroke-width="1" opacity=".4"/><circle cx="12" cy="12" r="3.2" fill="#e8702a"/></svg>
-<span>Values</span>
-</div>
 <h1>Your AI. <em>Your rules.</em></h1>
-<p class="sub">5 questions. 2 minutes. Get a prompt that changes how any AI answers you.</p>
+<p class="sub">5 questions. 2 minutes. A prompt that works on any model.</p>
 
-<div id="quiz">
-<div class="card">
-<div class="qn" id="qn"></div>
-<div class="qt" id="qt"></div>
-<div class="qo" id="qo"></div>
-</div>
-<div class="bar"><div class="fill" id="fill"></div></div>
-</div>
-
-<div class="result" id="res" style="display:none">
-<div class="res"><h2>Your prompt is ready.</h2><p>Copy into ChatGPT → Settings → Custom Instructions.</p></div>
-<div style="position:relative"><pre id="rp"></pre><button class="btn" id="cp">Copy</button></div>
+<div id="qz">
+  <div class="card">
+    <div id="qn"></div>
+    <div id="qt"></div>
+    <div id="qa"><button class="qbtn" onclick="pick('a')"></button></div>
+    <div id="qb"><button class="qbtn" onclick="pick('b')"></button></div>
+  </div>
+  <div id="prog"><div id="fill"></div></div>
 </div>
 
-<div class="info">
-<a href="https://values-landing.vercel.app">Full landing page</a> · <a href="https://github.com/wabrent/Values">GitHub</a>
+<div id="res">
+  <h2>Your prompt is ready.</h2>
+  <p class="st">Copy into ChatGPT &rarr; Settings &rarr; Custom Instructions.</p>
+  <div style="position:relative">
+    <pre id="rp"></pre>
+    <button id="cb" onclick="copyPrompt()">Copy</button>
+  </div>
 </div>
+
+<div class="ft">
+  <a href="https://values-landing.vercel.app">Full page</a> · <a href="https://github.com/wabrent/Values">GitHub</a>
+</div>
+
 </div>
 
 <script>
-const D=[
-{q:'You spent two years on a startup. Flat users, no revenue, savings gone. "Be honest..."',a:'Say it plainly',b:'Lead with care',at:'Give me the hard answer plainly. Do not cushion it.',bt:'Give me hard news with context and care around it.'},
-{q:'You\'re proud of a poem that\'s genuinely weak. What should the AI say?',a:'Be honest about it',b:'Support me first',at:'Give me real critique even when I\'m proud. Don\'t flatter me.',bt:'Meet me where I am. Encouragement first, critique only if I ask.'},
-{q:'You mention a myth as fact while asking something unrelated. Should the AI correct you?',a:'Correct me mid-task',b:'Stay on my task',at:'Correct me when I\'m wrong, even mid-task, even when I didn\'t ask.',bt:'Stay on the task I gave you. Don\'t audit my asides.'},
-{q:'You had a terrible day and just want to vent. The AI sees an obvious fix.',a:'Just listen',b:'Tell me the fix',at:'When I\'m venting, listen and reflect it back — don\'t solve it unless I ask.',bt:'Even when I\'m venting, tell me the fix you can see.'},
-{q:'"Based on what you know about me, should I move?" The AI cannot know.',a:'Say you can\'t know',b:'Give your best guess',at:'When you can\'t know, say so. Don\'t guess at things about my life.',bt:'Give me your best guess even when you can\'t be sure — just label it.'}
+var DATA = [
+  {q:"You spent two years on a startup. Flat users, no revenue, savings gone. Be honest — is this working?",a:"Say it plainly",b:"Lead with care",at:"Give me the hard answer plainly. Do not cushion it.",bt:"Give me hard news with context and care around it."},
+  {q:"You just finished a poem and you are proud of it. The poem is weak. What should the AI say?",a:"Be honest about it",b:"Support me first",at:"Give me real critique even when I am proud. Do not flatter me.",bt:"Meet me where I am. Encouragement first, critique only if I ask."},
+  {q:"You mention a myth as fact while asking about something unrelated. Should the AI correct you?",a:"Correct me mid-task",b:"Stay on my task",at:"Correct me when I am wrong, even mid-task.",bt:"Stay on the task I gave you. Do not audit my asides."},
+  {q:"You had a terrible day and just want to vent. The AI can see an obvious fix. Should it offer?",a:"Just listen",b:"Tell me the fix",at:"When I am venting, listen and reflect it back.",bt:"Even when I am venting, tell me the fix you can see."},
+  {q:"Based on what you know about me, should I move to a different city? The AI cannot know.",a:"Say you cannot know",b:"Give your best guess",at:"When you cannot know, say so. Do not guess about my life.",bt:"Give me your best guess but label it as a guess."}
 ];
-let i=0,c=[];
-function show(){if(i>=D.length){done()}else{document.getElementById('qn').textContent=`Question ${i+1} of ${D.length}`;document.getElementById('qt').textContent=D[i].q;document.getElementById('qo').innerHTML=`<button class="qbtn" id="qa">A. ${D[i].a}</button><button class="qbtn" id="qb">B. ${D[i].b}</button>`;document.getElementById('fill').style.width=`${(i/D.length)*100}%`;document.getElementById('qa').onclick=()=>{c[i]=D[i].at;i++;show()};document.getElementById('qb').onclick=()=>{c[i]=D[i].bt;i++;show()}}}
-function done(){document.getElementById('quiz').style.display='none';document.getElementById('res').style.display='block';const p='# MY VALUES\n# Copy this into ChatGPT Settings → Custom Instructions\n\n'+c.map((x,n)=>'- '+x).join('\n');document.getElementById('rp').textContent=p;document.getElementById('cp').onclick=()=>{navigator.clipboard.writeText(p);document.getElementById('cp').textContent='Copied!';setTimeout(()=>document.getElementById('cp').textContent='Copy',1500)}}
-show();
+var idx = 0;
+var choices = [];
+
+function pick(which){
+  choices.push(which==="a" ? DATA[idx].at : DATA[idx].bt);
+  idx++;
+  if(idx >= DATA.length){ showResult(); }
+  else { showQuestion(); }
+}
+
+function showQuestion(){
+  var d = DATA[idx];
+  document.getElementById("qn").textContent = "Question " + (idx+1) + " of " + DATA.length;
+  document.getElementById("qt").textContent = d.q;
+  document.getElementById("qa").innerHTML = '<button class="qbtn" onclick="pick(\'a\')">A. ' + d.a + '</button>';
+  document.getElementById("qb").innerHTML = '<button class="qbtn" onclick="pick(\'b\')">B. ' + d.b + '</button>';
+  document.getElementById("fill").style.width = ((idx/DATA.length)*100) + "%";
+}
+
+function showResult(){
+  document.getElementById("qz").style.display = "none";
+  document.getElementById("res").style.display = "block";
+  var p = "# MY VALUES\n# Copy into ChatGPT Settings > Custom Instructions\n\n";
+  for(var i=0; i<choices.length; i++){ p += "- " + choices[i] + "\n"; }
+  document.getElementById("rp").textContent = p;
+  window._prompt = p;
+}
+
+function copyPrompt(){
+  navigator.clipboard.writeText(window._prompt || "");
+  document.getElementById("cb").textContent = "Copied!";
+  setTimeout(function(){document.getElementById("cb").textContent = "Copy";},1500);
+}
+
+showQuestion();
 </script>
 </body>
 </html>
