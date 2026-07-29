@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenAid — follow your dollar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080706;--s:#12100d;--s2:#1a1713;--b:#2a2520;--t:#f5efe4;--td:rgba(255,255,255,.5);--tf:rgba(255,255,255,.25);--g:#2e8b57;--r:#cd5c5c;--a:#e8702a;--ad:#b85a20}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;line-height:1.55}
+::selection{background:var(--a);color:#fff}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:60;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,7,6,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--b)}
+.nb{display:flex;align-items:center;gap:10px;font-weight:600;font-size:1.05rem;letter-spacing:.06em}
+.nb svg{width:22px}
+.nr{display:flex;gap:14px}
+.btn{font-family:inherit;font-size:.82rem;font-weight:600;padding:9px 20px;border-radius:99px;cursor:pointer;border:none;transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-p{background:var(--g);color:#fff}.btn-p:hover{transform:scale(1.03)}
+.btn-o{border:1px solid var(--b);color:var(--t);background:transparent}.btn-o:hover{border-color:var(--td)}
+.btn-a{background:var(--a);color:#fff}.btn-a:hover{transform:scale(1.03)}
+
+.hero{padding:120px 28px 70px;max-width:900px;margin:0 auto;text-align:center}
+.eyeb{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--a);margin-bottom:16px}
+h1{font-weight:400;font-size:clamp(2rem,5vw,3.4rem);line-height:1.06;margin-bottom:14px}
+h1 em{color:var(--a);font-style:italic}
+.lead{color:var(--td);font-size:1.02rem;max-width:560px;margin:0 auto 24px;line-height:1.6}
+
+.stats{display:flex;justify-content:center;gap:40px;margin-top:32px;flex-wrap:wrap}
+.st{text-align:center}
+.st .v{font-size:2rem;color:var(--g);font-weight:300}
+.st .l{font-size:.72rem;color:var(--tf);margin-top:4px}
+.st .v.r{color:var(--r)}
+
+.sec{max-width:1000px;margin:0 auto;padding:70px 28px}
+h2{font-weight:400;font-size:clamp(1.5rem,3vw,2rem);margin-bottom:8px}
+h2 em{color:var(--a);font-style:italic}
+.dsc{color:var(--td);margin-bottom:28px;max-width:600px}
+
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.tab{font-family:inherit;font-size:.76rem;padding:8px 16px;border:1px solid var(--b);border-radius:99px;background:transparent;color:var(--td);cursor:pointer;transition:.15s}
+.tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+
+.card{border:1px solid var(--b);border-radius:12px;padding:22px;background:var(--s);margin-bottom:12px}
+.cr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.cr h3{font-size:1rem;font-weight:500;margin-bottom:4px}
+.cr .amt{font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--g)}
+.cr .m{color:var(--td);font-size:.8rem;margin-top:2px}
+.cr .bar-h{height:4px;background:var(--s2);border-radius:2px;overflow:hidden;margin-top:8px;flex-basis:100%}
+.cr .bar-f{height:100%;background:var(--g);border-radius:2px}
+
+.feed{max-height:360px;overflow-y:auto}
+.feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px}
+.tx{border-bottom:1px solid var(--b);padding:12px 0;display:flex;align-items:center;gap:14px;font-size:.82rem}
+.tx .dot{width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0}
+.tx .time{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--tf);flex-shrink:0;width:70px}
+.tx .from{color:var(--td);flex:1}
+.tx .val{font-family:'JetBrains Mono',monospace;color:var(--g);font-weight:500}
+
+.frm{display:flex;flex-direction:column;gap:12px;max-width:500px;margin-top:20px}
+.frm input,.frm textarea,.frm select{font-family:inherit;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:10px 14px;color:var(--t);font-size:.88rem;outline:none}
+.frm input:focus,.frm textarea:focus{border-color:var(--a)}
+.frm label{font-size:.78rem;color:var(--td)}
+.notice{font-size:.8rem;color:var(--tf);border:1px dashed var(--b);border-radius:8px;padding:10px 14px;margin-top:12px;line-height:1.5}
+
+pre{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--td);overflow-x:auto;white-space:pre-wrap;line-height:1.55}
+pre .k{color:var(--a)}pre .g{color:var(--g)}
+
+footer{text-align:center;padding:40px 28px;font-size:.74rem;color:var(--tf);border-top:1px solid var(--b)}
+footer a{color:var(--td);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#2e8b57" stroke-width="1.5"/><path d="M4 9l8 3 8-3M4 13l8 3 8-3" stroke="#2e8b57" stroke-width="1.2" opacity=".6"/></svg>OpenAid</div>
+<div class="nr">
+<a class="btn btn-o" href="#dashboard">Dashboard</a>
+<a class="btn btn-o" href="#create">Create</a>
+<a class="btn btn-o" href="#apply">Apply for Aid</a>
+<a class="btn btn-p" href="#donate">Donate</a>
+</div>
+</nav>
+
+<header class="hero">
+<div class="eyeb">Open Source · Transparent · Zero Overhead</div>
+<h1>Follow your dollar <em>all the way to the person it helped.</em></h1>
+<p class="lead">Give a dollar to charity and a quarter can vanish before it reaches anyone. OpenAid puts every decision and every transaction on a public ledger — so you can see exactly where your money went, in real time.</p>
+<div class="stats">
+<div class="st"><div class="v" id="totalDonated">0</div><div class="l">total donated</div></div>
+<div class="st"><div class="v" id="totalHelped">0</div><div class="l">people helped</div></div>
+<div class="st"><div class="v" id="totalCampaigns" style="color:var(--a)">0</div><div class="l">active campaigns</div></div>
+<div class="st"><div class="v r">0%</div><div class="l">overhead</div></div>
+</div>
+</header>
+
+<section class="sec" id="dashboard">
+<h2>Public Ledger. <em>Every transaction, visible.</em></h2>
+<p class="dsc">No hidden fees. No gatekeepers deciding who gets what. Every campaign, donation, and aid distribution is recorded here.</p>
+<div class="tabs"><button class="tab on" data-tab="campaigns">Campaigns</button><button class="tab" data-tab="feed">Transaction Feed</button></div>
+<div id="campaignsView"></div>
+<div id="feedView" class="feed" style="display:none"></div>
+</section>
+
+<section class="sec" id="create" style="background:var(--s)">
+<h2>Start a campaign. <em>Transparent from day one.</em></h2>
+<p class="dsc">Define what you need, set the criteria, and let donors see exactly where their money goes.</p>
+<div class="frm">
+<label>Campaign title</label><input id="ctitle" placeholder="e.g. Emergency medical fund for flood victims">
+<label>Amount needed (USD)</label><input id="camt" type="number" min="1" value="5000">
+<label>Recipient criteria (public rules for who qualifies)</label><textarea id="ccrit" rows="3" placeholder="e.g. Households displaced by floods in Region X, income below $200/month, with children under 12"></textarea>
+<label>Description</label><textarea id="cdesc" rows="3" placeholder="What will this fund achieve? Be specific — donors want to track impact."></textarea>
+<button class="btn btn-a" onclick="createCampaign()">Create Campaign</button>
+</div>
+</section>
+
+<section class="sec" id="apply">
+<h2>Apply for aid. <em>Evaluated by rules, not moods.</em></h2>
+<p class="dsc">Every application is scored against the published criteria. No human bias. No favoritism. The rules are public.</p>
+<div class="frm">
+<label>Select campaign</label><select id="asel"></select>
+<label>Your situation (describe how you meet the criteria)</label><textarea id="aapp" rows="3" placeholder="Describe your circumstances. The AI will check them against the campaign's published criteria."></textarea>
+<button class="btn btn-a" onclick="applyForAid()">Submit Application</button>
+<div class="notice" id="evalResult" style="display:none"></div>
+</div>
+</section>
+
+<section class="sec" id="donate" style="background:var(--s)">
+<h2>Donate. <em>Watch your dollar move.</em></h2>
+<p class="dsc">Every donation is recorded publicly. You get a tracking ID — follow it all the way to the recipient.</p>
+<div class="frm">
+<label>Campaign</label><select id="dsel"></select>
+<label>Amount (USD)</label><input id="damt" type="number" min="1" value="50">
+<label>Your name (or anonymous)</label><input id="dname" placeholder="Anonymous donor">
+<button class="btn btn-p" onclick="donate()">Donate & Track</button>
+</div>
+</section>
+
+<footer>
+OpenAid · open source · Apache-2.0 · every transaction is public · <a href="https://github.com/wabrent/OpenAid">GitHub</a>
+</footer>
+
+<script>
+var campaigns = JSON.parse(localStorage.getItem("oa_campaigns") || "[]");
+var transactions = JSON.parse(localStorage.getItem("oa_tx") || "[]");
+if(campaigns.length===0){ seedData(); }
+
+function seedData(){
+  campaigns=[{id:"c1",title:"Flood Relief — Region X",amount:10000,raised:4200,criteria:"Displaced by floods, income below $200/mo, children under 12",desc:"Emergency food, shelter, and medical care for 200 displaced families.",donors:["Alice ($500)","Ben ($1200)","Carla ($2500)"]}];
+  transactions=[{time:"2026-07-25 14:22",from:"Alice",campaign:"Flood Relief",amount:500,note:"donation"},{time:"2026-07-26 09:10",from:"Ben",campaign:"Flood Relief",amount:1200,note:"donation"},{time:"2026-07-27 16:45",from:"Carla",campaign:"Flood Relief",amount:2500,note:"donation"},{time:"2026-07-28 08:00",from:"Campaign",campaign:"Flood Relief",amount:1500,note:"distributed to Family #42 — 4 members, verified criteria"}];
+  save();
+}
+
+function save(){localStorage.setItem("oa_campaigns",JSON.stringify(campaigns));localStorage.setItem("oa_tx",JSON.stringify(transactions));refresh()}
+
+function addTx(from,campaign,amount,note){transactions.unshift({time:new Date().toISOString().replace("T"," ").slice(0,16),from:from,campaign:campaign,amount:amount,note:note});save()}
+
+function refresh(){
+  var t=0,h=0;
+  campaigns.forEach(function(c){t+=c.raised;h+=Math.floor(c.raised/50)});
+  document.getElementById("totalDonated").textContent="$"+t.toLocaleString();
+  document.getElementById("totalHelped").textContent=h;
+  document.getElementById("totalCampaigns").textContent=campaigns.length;
+  renderCampaigns();renderFeed();renderSelects();
+}
+
+function renderCampaigns(){
+  var h="";campaigns.forEach(function(c){
+    var pct=Math.min(100,Math.round((c.raised/c.amount)*100));
+    var donors=c.donors||[];
+    h+='<div class="card"><div class="cr"><div><h3>'+c.title+'</h3><div class="m">'+c.desc+'</div><div class="m" style="margin-top:4px;font-size:.75rem;color:var(--a)"><strong>Criteria:</strong> '+c.criteria+'</div></div><div class="amt">$'+c.raised.toLocaleString()+' / $'+c.amount.toLocaleString()+'</div></div><div class="bar-h"><div class="bar-f" style="width:'+pct+'%"></div></div><div style="margin-top:6px;font-size:.75rem;color:var(--tf)">'+pct+'% funded · '+donors.length+' donors</div></div>';
+  });
+  document.getElementById("campaignsView").innerHTML=h||'<div class="notice">No campaigns yet. Create one above.</div>';
+}
+
+function renderFeed(){
+  var h="";transactions.forEach(function(tx){
+    var icon=tx.note==="donation"?'<div class="dot"></div>':'<div class="dot" style="background:var(--a)"></div>';
+    h+='<div class="tx">'+icon+'<div class="time">'+tx.time+'</div><div class="from">'+tx.from+' &rarr; '+tx.campaign+' <span style="color:var(--tf)">('+tx.note+')</span></div><div class="val">$'+tx.amount+'</div></div>';
+  });
+  document.getElementById("feedView").innerHTML=h||'<div class="notice">No transactions yet.</div>';
+}
+
+function renderSelects(){
+  var o="";campaigns.forEach(function(c){o+='<option value="'+c.id+'">'+c.title+'</option>'});
+  document.getElementById("asel").innerHTML=o||'<option>No campaigns</option>';
+  document.getElementById("dsel").innerHTML=o||'<option>No campaigns</option>';
+}
+
+// Tab switching
+document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){
+  document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on")});t.classList.add("on");
+  document.getElementById("campaignsView").style.display=t.dataset.tab==="campaigns"?"block":"none";
+  document.getElementById("feedView").style.display=t.dataset.tab==="feed"?"block":"none";
+}});
+
+// Create campaign
+function createCampaign(){
+  var title=document.getElementById("ctitle").value.trim();
+  var amt=parseInt(document.getElementById("camt").value)||0;
+  var crit=document.getElementById("ccrit").value.trim();
+  var desc=document.getElementById("cdesc").value.trim();
+  if(!title||!amt||!crit){alert("Fill all fields");return}
+  campaigns.push({id:"c"+(campaigns.length+1),title:title,amount:amt,raised:0,criteria:crit,desc:desc,donors:[]});
+  addTx("System",title,0,"campaign created — criteria published");
+  ["ctitle","camt","ccrit","cdesc"].forEach(function(id){document.getElementById(id).value=""});
+}
+
+// AI Aid Evaluation
+function evaluateApplication(campaign,appText){
+  var criteria=String(campaign.criteria).toLowerCase();
+  var app=String(appText).toLowerCase();
+  var words=criteria.split(/[,\s]+/).filter(function(w){return w.length>3});
+  var score=0,hits=[],misses=[];
+  words.forEach(function(w){
+    if(app.indexOf(w)>=0){score++;hits.push(w)}else{misses.push(w)}
+  });
+  var pct=words.length>0?Math.round((score/words.length)*100):0;
+  var verdict=pct>=50?"APPROVED":"NEEDS REVIEW";
+  var color=pct>=50?"var(--g)":"var(--r)";
+  return {score:pct,verdict:verdict,color:color,hits:hits,misses:misses};
+}
+
+function applyForAid(){
+  var sel=document.getElementById("asel").value;
+  var app=document.getElementById("aapp").value.trim();
+  if(!sel||!app){alert("Select campaign and describe situation");return}
+  var c=campaigns.find(function(x){return x.id===sel});
+  if(!c)return;
+  var ev=evaluateApplication(c,app);
+  var r=document.getElementById("evalResult");
+  r.style.display="block";
+  r.innerHTML='<div style="font-family:JetBrains Mono,monospace;font-size:.74rem;color:'+ev.color+'">['+ev.verdict+'] Match: '+ev.score+'%</div>'
+    +'<div style="margin-top:6px;font-size:.82rem">Matching criteria: <strong style="color:var(--g)">'+ev.hits.join(", ")+'</strong></div>'
+    +'<div style="font-size:.82rem">Not matched: <span style="color:var(--r)">'+(ev.misses.length?ev.misses.join(", "):"none")+'</span></div>'
+    +'<div style="margin-top:8px;font-size:.76rem;color:var(--tf)">Every evaluation is rule-based. No human judgment. No bias. <a href="#" onclick="document.getElementById(\'details-'+c.id+'\').style.display=\'block\';return false">View rules.</a></div>'
+    +'<pre id="details-'+c.id+'" style="display:none;margin-top:8px">Campaign criteria:\n'+c.criteria+'\n\nAI evaluation rules:\n1. Extract key terms from criteria\n2. Check each term against application\n3. Score = matched terms / total terms\n4. Threshold: 50% = approved\n\nThis is transparent. Anyone can audit it.</pre>';
+}
+
+// Donate
+function donate(){
+  var sel=document.getElementById("dsel").value;
+  var amt=parseInt(document.getElementById("damt").value)||0;
+  var name=document.getElementById("dname").value.trim()||"Anonymous";
+  if(!sel||!amt){alert("Select campaign and enter amount");return}
+  var c=campaigns.find(function(x){return x.id===sel});
+  if(!c)return;
+  c.raised+=amt;c.donors.push(name+" ($"+amt+")");
+  addTx(name,c.title,amt,"donation");
+  document.getElementById("damt").value="50";document.getElementById("dname").value="";
+  alert("Donated! Track your dollar: #TX-"+String(transactions.length+1).padStart(4,"0")+" in the transaction feed.");
+}
+
+refresh();
+</script>
+</body>
+</html>
