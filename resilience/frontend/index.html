@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resilience — global threat monitor</title>
+<script src="https://unpkg.com/maplibre-gl@4.6.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.6.0/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+:root{--bg:#07080c;--s:#10121a;--b:rgba(255,255,255,.08);--t:#e4e4ec;--td:rgba(255,255,255,.45);--tf:rgba(255,255,255,.22);--r:#ff4455;--o:#ff8833;--y:#ffcc22;--g:#33cc77;--c:#33aacc;--p:#9944ff}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:system-ui,-apple-system,sans-serif}
+#map{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.marker{border-radius:50%;border:2px solid rgba(0,0,0,.5);cursor:pointer;transition:transform .15s}
+.marker:hover{transform:scale(1.4);z-index:100}
+#sidebar{position:fixed;top:0;left:0;bottom:0;z-index:10;width:280px;background:rgba(7,8,12,.94);border-right:1px solid var(--b);backdrop-filter:blur(20px);display:flex;flex-direction:column;padding:20px 0}
+.sb-header{padding:0 20px 16px;border-bottom:1px solid var(--b)}
+.sb-header h1{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.sb-header h1 span{color:var(--c)}
+.sb-header .tag{font-size:.62rem;color:var(--tf);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+.layers{flex:1;overflow-y:auto;padding:12px 20px}
+.layers::-webkit-scrollbar{width:3px}.layers::-webkit-scrollbar-thumb{background:var(--b)}
+.layer{margin-bottom:2px}
+.layer-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;background:transparent;border:none;color:var(--td);font-size:.78rem;cursor:pointer;border-radius:8px;transition:.15s;text-align:left;font-family:inherit}
+.layer-btn:hover{background:rgba(255,255,255,.04);color:#fff}
+.layer-btn.active{background:rgba(255,255,255,.06);color:#fff}
+.layer-btn .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.r{background:var(--r);box-shadow:0 0 8px var(--r)}
+.dot.o{background:var(--o);box-shadow:0 0 8px var(--o)}
+.dot.y{background:var(--y);box-shadow:0 0 8px var(--y)}
+.dot.g{background:var(--g);box-shadow:0 0 8px var(--g)}
+.dot.c{background:var(--c);box-shadow:0 0 8px var(--c)}
+.dot.p{background:var(--p);box-shadow:0 0 8px var(--p)}
+.count{font-family:monospace;font-size:.6rem;color:var(--tf);margin-left:auto}
+
+.sb-footer{padding:14px 20px;border-top:1px solid var(--b);font-family:monospace;font-size:.6rem;color:var(--tf);display:flex;justify-content:space-between}
+#status-bar{position:fixed;bottom:14px;right:14px;z-index:10;font-family:monospace;font-size:.62rem;color:var(--tf);background:rgba(7,8,12,.9);padding:8px 14px;border-radius:8px;border:1px solid var(--b)}
+.pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+@media(max-width:640px){#sidebar{width:220px;font-size:.7rem}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="sidebar">
+  <div class="sb-header">
+    <h1>◈ <span>Resilience</span></h1>
+    <div class="tag">Global Threat Monitor · Open Data</div>
+  </div>
+  <div class="layers" id="layerList">
+    <div class="layer"><button class="layer-btn active" onclick="toggleLayer('earthquakes')"><span class="dot o"></span>Earthquakes M2.5+<span class="count" id="cnt-earthquakes">—</span></button></div>
+    <div class="layer"><button class="layer-btn active" onclick="toggleLayer('fires')"><span class="dot r"></span>Wildfires 24h<span class="count" id="cnt-fires">—</span></button></div>
+  </div>
+  <div class="sb-footer"><span id="updateTime">loading...</span><span class="pulse">● live</span></div>
+</div>
+
+<div id="status-bar">fetching global threat data...</div>
+
+<script>
+var m=new maplibregl.Map({container:'map',style:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',center:[0,15],zoom:1.8,attributionControl:false});
+m.addControl(new maplibregl.NavigationControl(),'bottom-right');
+
+var state={earthquakes:true,fires:true};
+var dataCache={};
+
+function toggleLayer(id){
+  state[id]=!state[id];
+  var btn=document.querySelector('[onclick="toggleLayer(\''+id+'\')"]');
+  btn.classList.toggle('active',state[id]);
+  if(state[id]&&dataCache[id]){renderLayer(id,dataCache[id])}else if(!state[id]){hideLayer(id)}else{
+    fetch('/api/'+id).then(function(r){return r.json()}).then(function(d){
+      dataCache[id]=d;
+      var colors={earthquakes:'#ff8833',fires:'#ff4455'};
+      renderLayer(id,d,colors[id]);
+      updateCounts();
+    });
+  }
+}
+
+function renderLayer(id,geojson,color){
+  var src=id+'-src';
+  if(m.getSource(src)){m.getSource(src).setData(geojson);m.setLayoutProperty(id,'visibility','visible');return}
+  m.addSource(src,{type:'geojson',data:geojson});
+  m.addLayer({id:id,type:'circle',source:src,paint:{'circle-radius':5,'circle-color':color||'#ff8833','circle-opacity':.75,'circle-stroke-width':1,'circle-stroke-color':'rgba(0,0,0,.4)'}});
+  document.getElementById('cnt-'+id).textContent=geojson.features.length;
+}
+
+function fetchAll(){
+  Promise.all([fetch('/api/earthquakes').then(function(r){return r.json()}).then(function(d){dataCache.earthquakes=d;renderLayer('earthquakes',d,'#ff8833')}),fetch('/api/fires').then(function(r){return r.json()}).then(function(d){dataCache.fires=d;renderLayer('fires',d,'#ff4455')})]).then(function(){
+    updateCounts();
+    document.getElementById('updateTime').textContent=new Date().toLocaleTimeString();
+    document.getElementById('status-bar').innerHTML='real-time threat feed · <span style="color:#33cc77">resilience v1.0</span>';
+  });
+}
+
+function updateCounts(){
+  for(var k in dataCache){document.getElementById('cnt-'+k).textContent=dataCache[k].features.length}
+}
+
+fetchAll();
+setInterval(fetchAll,300000);
+</script>
+</body>
+</html>
